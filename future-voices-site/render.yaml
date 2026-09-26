@@ -11,6 +11,22 @@ services:
   # ---- the site: static front end + PHP booking/enrollment/payment API ----
   - type: web
     name: future-voices-web
+    services:
+  - type: web
+    name: future-voices-web
+    runtime: docker
+    rootDir: future-voices-site
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    ...
+
+  - type: pserv
+    name: future-voices-db
+    runtime: docker
+    rootDir: future-voices-site
+    dockerfilePath: ./mysql/Dockerfile
+    dockerContext: .
+    ...
     runtime: docker
     dockerfilePath: ./Dockerfile
     dockerContext: .
@@ -48,6 +64,22 @@ services:
   # ---- self-hosted MySQL (Render's own managed DB is Postgres-only) ----
   - type: pserv
     name: future-voices-db
+    services:
+  - type: web
+    name: future-voices-web
+    runtime: docker
+    rootDir: future-voices-site
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    ...
+
+  - type: pserv
+    name: future-voices-db
+    runtime: docker
+    rootDir: future-voices-site
+    dockerfilePath: ./mysql/Dockerfile
+    dockerContext: .
+    ...
     runtime: docker
     dockerfilePath: ./mysql/Dockerfile
     dockerContext: .
