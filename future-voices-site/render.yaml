@@ -18,7 +18,13 @@ services:
     rootDir: future-voices-site
     dockerfilePath: ./Dockerfile
     dockerContext: .
-    ...
+
+  steps:
+  - name: Checkout code
+    uses: actions/checkout@v4
+
+  - name: Build Docker image
+    run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
 
   - type: pserv
     name: future-voices-db
