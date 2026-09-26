@@ -1,0 +1,69 @@
+# Render Blueprint for Future Voices School & Studio.
+# Deploy: push this repo to GitHub/GitLab, then in the Render Dashboard
+# choose New > Blueprint and point it at the repo. Render reads this file
+# and creates both services below in one go. See RENDER_DEPLOY.md.
+#
+# Both services need a paid instance plan — the "starter" plan is the
+# cheapest one that supports the persistent disk the database needs.
+# Free-tier instances can't attach a disk.
+
+services:
+  # ---- the site: static front end + PHP booking/enrollment/payment API ----
+  - type: web
+    name: future-voices-web
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: starter
+    healthCheckPath: /index.html
+    envVars:
+      - key: FVSS_DB_HOST
+        fromService:
+          name: future-voices-db
+          type: pserv
+          property: host
+      - key: FVSS_DB_PORT
+        fromService:
+          name: future-voices-db
+          type: pserv
+          property: port
+      - key: FVSS_DB_NAME
+        fromService:
+          name: future-voices-db
+          type: pserv
+          envVarKey: MYSQL_DATABASE
+      - key: FVSS_DB_USER
+        fromService:
+          name: future-voices-db
+          type: pserv
+          envVarKey: MYSQL_USER
+      - key: FVSS_DB_PASS
+        fromService:
+          name: future-voices-db
+          type: pserv
+          envVarKey: MYSQL_PASSWORD
+      - key: FVSS_PAYMENTS_MODE
+        value: mock # switch to "live" once real MTN MoMo / Airtel credentials are wired up
+
+  # ---- self-hosted MySQL (Render's own managed DB is Postgres-only) ----
+  - type: pserv
+    name: future-voices-db
+    runtime: docker
+    dockerfilePath: ./mysql/Dockerfile
+    dockerContext: .
+    plan: starter
+    disk:
+      name: future-voices-db-data
+      mountPath: /var/lib/mysql
+      sizeGB: 1
+    envVars:
+      - key: PORT
+        value: 3306
+      - key: MYSQL_DATABASE
+        value: fvss
+      - key: MYSQL_USER
+        value: fvss_app
+      - key: MYSQL_PASSWORD
+        generateValue: true
+      - key: MYSQL_ROOT_PASSWORD
+        generateValue: true
